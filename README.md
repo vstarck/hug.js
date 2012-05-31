@@ -1,7 +1,7 @@
 hug.js
 ======
 
-Functional wrappers for native objects/values
+(Useless) functional wrappers for native objects/values
 
 Standard properties of the instances:
 -------------------------------------
@@ -15,7 +15,7 @@ Standard properties of the instances:
 - #has?
 - #is?
 - #missing
-
+- #toString
 
 A few (useless) examples
 --------------
@@ -37,6 +37,23 @@ var one = hug(1)
 
 one('#set')('myProp', 'value!')
 one('myProp') // "value!"
+
+// Chained definitions
+one
+	('#set')('a', 1)
+	('#set')('b', 2)
+	('#set')('c', 3)
+	
+// Batch syntax
+one('#set')({
+	d: 4,
+	e: 5,
+	'*': function($self, number) {
+		return $self() * number
+	}
+})
+	
+one('*', 4) // 4
 ```
 
 ###Checking for properties###
@@ -56,18 +73,18 @@ var one = hug(1)
 
 // $self is a privileged self-reference
 one('#set')('+', function($self, another) {
-	return $self() + another;
+	return $self() + another
 })
 one('+')(2) // 3
 ```
 
-###Using prefix syntax###
+###Using prefix syntax (a la LISP)###
 
 ```javascript	
 var one = hug(1)
 
 one('#set')('+', function($self, a, b, c) {
-	return $self() + a + b + c;
+	return $self() + a + b + c
 })
 one('+', 2, 3, 4) // 10
 ```
@@ -78,11 +95,11 @@ one('+', 2, 3, 4) // 10
 var myObj = hug()
 
 myObj('#set')('#missing', function($self, name) {
-	return 'Requested: ' + name;
+	return 'Requested: ' + name
 })
 
-myObj('a') // "Requested a"
-myObj('foo') // "Requested foo"
+myObj('a') // "Requested: a"
+myObj('foo') // "Requested: foo"
 ```
 
 ###Spawning instances###
@@ -90,11 +107,12 @@ myObj('foo') // "Requested foo"
 ```javascript	
 var Color = hug()
 
+// constructor
 Color('#set')('init', function($self, r, g, b) {
 	$self
-		('#set')('r', r)
-		('#set')('g', g)
-		('#set')('b', b)
+		('#set')('r', r || 0)
+		('#set')('g', g || 0)
+		('#set')('b', b || 0)
 })
 
 Color('#set')('+', function($self, another) {
@@ -105,13 +123,50 @@ Color('#set')('+', function($self, another) {
 	)
 })
 
+Color('#set')('#value', function($self) {
+	return '#' +
+			$self('r').toString(16) + 
+			$self('g').toString(16) + 
+			$self('b').toString(16)
+})
+
 var red = Color('#new')(255, 0, 0)
 var blue = Color('#new')(0, 0, 255)
+
+red() // #ff0000
+blue() // #0000ff
 
 var violet = red('+', blue)
 
 violet('r') // 255
 violet('g') // 0
 violet('b') // 255
+
+violet('is?')(Color) // true
+violet() // #ff00ff
 ```
 
+
+###Lazy binding###
+
+```javascript
+Color('#set')('brightness', function($self, value) {
+	return $self
+		('#set')('r', $self('r') * value)
+		('#set')('g', $self('g') * value)
+		('#set')('b', $self('b') * value)
+})
+
+var main = Color('#new')(140, 30, 90)
+
+var darker = hug()('#bind')(function() {
+	return main('#new')()
+		('brightness')(0.7)
+})
+
+darker('r') // 98 <- (main.r * 0.7)
+
+main('#set')('r', 70)
+
+darker('r') // 49 <- (main.r * 0.7)
+```
