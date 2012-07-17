@@ -28,6 +28,7 @@ var one = hug(1)
 one // function
 one() // 1
 one('toString') // function
+one('toString')() // "1"
 ```
 
 ###Setting properties###
@@ -78,7 +79,7 @@ one('#set')('+', function($self, another) {
 one('+')(2) // 3
 ```
 
-###Using prefix syntax (a la LISP)###
+###Using prefix syntax###
 
 ```javascript	
 var one = hug(1)
@@ -86,7 +87,11 @@ var one = hug(1)
 one('#set')('+', function($self, a, b, c) {
 	return $self() + a + b + c
 })
+
 one('+', 2, 3, 4) // 10
+
+// similar to
+one('+')(2, 3, 4) // 10
 ```
 
 ###Catching virtual properties###
@@ -105,9 +110,10 @@ myObj('foo') // "Requested: foo"
 ###Spawning instances###
 
 ```javascript	
+// Create a wrapped object
 var Color = hug()
 
-// constructor
+// Set the constructor
 Color('#set')('init', function($self, r, g, b) {
 	$self
 		('#set')('r', r || 0)
@@ -115,6 +121,7 @@ Color('#set')('init', function($self, r, g, b) {
 		('#set')('b', b || 0)
 })
 
+// A few methods
 Color('#set')('+', function($self, another) {
 	return Color('#new')(
 		$self('r') + another('r'),
@@ -123,6 +130,7 @@ Color('#set')('+', function($self, another) {
 	)
 })
 
+// Object's value
 Color('#set')('#value', function($self) {
 	return '#' +
 			$self('r').toString(16) + 
@@ -136,7 +144,7 @@ var blue = Color('#new')(0, 0, 255)
 red() // #ff0000
 blue() // #0000ff
 
-var violet = red('+', blue)
+var violet = red('+')(blue)
 
 violet('r') // 255
 violet('g') // 0
@@ -159,6 +167,7 @@ Color('#set')('brightness', function($self, value) {
 
 var main = Color('#new')(140, 30, 90)
 
+// 'darker' is a binded reference 'main'
 var darker = hug()('#bind')(function() {
 	return main('#new')()
 		('brightness')(0.7)
