@@ -72,7 +72,7 @@ subject('#has?')('anotherProp') // false
 ```javascript	
 var one = hug(1)
 
-// $self is a privileged self-reference
+// $self is a privileged self-reference (can fetch private properties, etc)
 one('#set')('+', function($self, another) {
 	return $self() + another
 })
@@ -130,7 +130,7 @@ Color('#set')('+', function($self, another) {
 	)
 })
 
-// Object's value
+// Object value getter
 Color('#set')('#value', function($self) {
 	return '#' +
 			$self('r').toString(16) + 
