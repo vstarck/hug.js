@@ -1,3 +1,15 @@
+/**
+ *  Functional wrappers for JS Objects
+ *
+ *  Features
+ *      - Private properties
+ *      - Virtual properties
+ *      - Splat'd methods
+ *      - Type hinting
+ *
+ */
+
+
 /*
 	TODO	
 		fix private set
@@ -129,6 +141,7 @@
 		return false;
 	};
 		
+    // TODO bind wrapped object not the value
 	hug.bind = function(initializer) {
 		var instance = hug();
 		
@@ -151,11 +164,18 @@
 
 	hug.SPLAT_OPERATOR = '$rest';
 
+    // TODO throw away #?
 	hug.BASE = {
 		'#value': hug.NATIVE_VALUE,
 		'#id': function __id($self) {
 			return $self('id');
 		},
+        // TODO implement alias setting
+        /*
+            hug()('#set')(['+', 'add'], function() {
+                // ...
+            });
+        */
 		'#set': function __set(name, value) {
 			if(hug.isObject(name)) {
 				for(var p in name) {
@@ -171,6 +191,7 @@
 				return this.proxy;
 			}
 		
+            // TODO avoid public setter for private properties
 			if(/private\s*:\s*/.test(name)) {
 				this['private'][name.replace(/private\s*:\s*/, '')] = value;
 			} else {				
@@ -205,9 +226,11 @@
 				('#set')('#value', hug.NATIVE_VALUE)
 				('#value')(currentValue)
 		},
+        // TODO what a about virtual properties?
 		'#has?': function __has($self, name) {
 			return this[name] !== undefined;
 		},
+        // TODO implement ancestor lookup
 		'#is?': function __is($self, type) {
 			if(!$self('#has?')('#parent')) {
 				return false;
@@ -263,7 +286,8 @@
 			return seed++;
 		}
 	})();
-		
+
+    // TODO rework properties lookupo (__fetch / __get)		
 	function __fetch(name) {
 		if(this[name] !== undefined) {
 			return this[name];
@@ -346,13 +370,23 @@
 		return fn.apply(this, args);	
 	};
 	
+
+    // TODO implement
+    /*
+
+    hug()('#set')('typedMethod', function(foo, bar, baz) {
+        // ...    
+    }, { foo: hug.IS.NUMBER, bar: hug.IS.ARRAY })    
+    
+    */
 	function __ensureTypes(fn, types) {
 		return fn;
 	};
 		
 	create = function(value, body) {
 		var proxy, proxied;
-						
+		
+        // TODO move instantation to another function				
 		var C = function() {};
 		
 		C.prototype = hug.BASE;
