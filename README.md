@@ -150,7 +150,7 @@ violet('r') // 255
 violet('g') // 0
 violet('b') // 255
 
-violet('is?')(Color) // true
+violet('#is?')(Color) // true
 violet() // #ff00ff
 ```
 
