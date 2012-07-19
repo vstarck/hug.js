@@ -162,7 +162,7 @@
 		$self('#set')('private:value', value);
 	};
 
-    hug.PRIVILEGED_SETTER = function(name, value, modifiers) {
+    hug.PRIVILEGED_SETTER = function __set(name, value, modifiers) {
 		if(hug.isObject(name)) {
 			for(var p in name) {
 				if(name.hasOwnProperty(p)) {
@@ -179,9 +179,9 @@
 	
 		if(/private\s*:\s*/.test(name)) {
 			this.private[name.replace(/private\s*:\s*/, '')] = value;
-		}
-
-        this[name] = value;					
+		} else {
+            this[name] = value;
+        }
 		
 		return this.proxy;
     };
