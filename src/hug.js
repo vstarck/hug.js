@@ -18,7 +18,7 @@
 		add lazy binding
 		define fallback to value properties
 		define inheritence chain
-		
+        define autowrap behavior for object properties
 		
 	
 	var one = hug(1);
@@ -162,6 +162,30 @@
 		$self('#set')('private:value', value);
 	};
 
+    hug.PRIVILEGED_SETTER = function(name, value, modifiers) {
+		if(hug.isObject(name)) {
+			for(var p in name) {
+				if(name.hasOwnProperty(p)) {
+					__set(p, name[p]);
+				}
+			}
+			
+			return this.proxy;
+		}
+	
+		if(!name) {
+			return this.proxy;
+		}
+	
+		if(/private\s*:\s*/.test(name)) {
+			this.private[name.replace(/private\s*:\s*/, '')] = value;
+		}
+
+        this[name] = value;					
+		
+		return this.proxy;
+    };
+
 	hug.SPLAT_OPERATOR = '$rest';
 
     // TODO throw away #?
@@ -176,11 +200,11 @@
                 // ...
             });
         */
-		'#set': function __set(name, value) {
+		'#set': function __set(name, value, modifiers) {
 			if(hug.isObject(name)) {
 				for(var p in name) {
 					if(name.hasOwnProperty(p)) {
-						this.proxy('#set')(p, name[p]);
+						__set(p, name[p]);
 					}
 				}
 				
@@ -191,12 +215,11 @@
 				return this.proxy;
 			}
 		
-            // TODO avoid public setter for private properties
 			if(/private\s*:\s*/.test(name)) {
-				this['private'][name.replace(/private\s*:\s*/, '')] = value;
-			} else {				
-				this[name] = value;					
+				throw new Error('Cannot access private values!');
 			}
+
+            this[name] = value;					
 			
 			return this.proxy;
 		},
@@ -287,7 +310,7 @@
 		}
 	})();
 
-    // TODO rework properties lookupo (__fetch / __get)		
+    // TODO rework properties lookup (__fetch / __get)		
 	function __fetch(name) {
 		if(this[name] !== undefined) {
 			return this[name];
@@ -310,6 +333,10 @@
 			return this.proxy('#value')();				
 		}
 		
+		if(/private\s*:\s*/.test(name)) {
+			throw new Error('Cannot access private values!');
+		}
+
 		var value = __fetch.call(this, name);
 		
 		if(typeof value == 'function') {
@@ -320,15 +347,17 @@
 			return value;	
 		}
 		
-		__exec.call(this, this['#missing'], [name]);
-		
-		return undefined;				
+		__exec.call(this, this['#missing'], [name]);			
 	};
 	
-	function __privileged_get(name) {
+	function __privileged_proxy(name) {
 		if(name === undefined) {
 			return __get.call(this, name);
 		}
+
+        if(name == '#set') {
+            return hug.PRIVILEGED_SETTER.bind(this);
+        }
 
 		name = name.replace('private:', '');
 	
@@ -356,13 +385,13 @@
 	function __exec(fn, args) {	
 		if(args.length == 0) {				
 			if(argumentNames(fn)[0] === '$self') {			
-				return fn.bind(this, __privileged_get.bind(this));
+				return fn.bind(this, __privileged_proxy.bind(this));
 			}
 			return fn.bind(this);					
 		}
 	
 		if(argumentNames(fn)[0] === '$self') {			
-			args.unshift(__privileged_get.bind(this));
+			args.unshift(__privileged_proxy.bind(this));
 		}
 	
 		args = __splat(fn, args);
@@ -377,21 +406,24 @@
     hug()('#set')('typedMethod', function(foo, bar, baz) {
         // ...    
     }, { foo: hug.IS.NUMBER, bar: hug.IS.ARRAY })    
+
+    hug()('#set')('typedMethod', function(Array$foo, MyType$bar, baz) {
+        // ...    
+    })    
     
     */
 	function __ensureTypes(fn, types) {
 		return fn;
 	};
 		
+    var BASE = function __base() {};
+		
+	BASE.prototype = hug.BASE;
+
 	create = function(value, body) {
 		var proxy, proxied;
-		
-        // TODO move instantation to another function				
-		var C = function() {};
-		
-		C.prototype = hug.BASE;
-		
-		proxied = new C;
+				
+		proxied = new BASE;
 						
 		merge(proxied, { 'private': {} }, body);
 		
@@ -401,7 +433,7 @@
 		
 		proxied.proxy = proxy;
 
-		proxy('#set')('private:id', uid());
+        proxied.id = uid();
 		proxy('#value')(value || null);
 		
 		return proxy;				
