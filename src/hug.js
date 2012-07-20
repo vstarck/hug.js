@@ -192,6 +192,10 @@
         return this.proxy;
     };
 
+    hug.NATIVE_TO_STRING = function __toString($self) {
+        return '' + $self().toString();
+    };
+
     hug.SPLAT_OPERATOR = '$rest';
 
     // TODO throw away #?
@@ -261,7 +265,8 @@
                 ('#set')('#value', hug.NATIVE_VALUE)
                 ('#value')(currentValue)
         },
-        // TODO what a about virtual properties?
+        // TODO what about virtual properties?
+        // TODO what about private properties?
         '#has?': function __has($self, name) {
             return this[name] !== undefined;
         },
@@ -273,7 +278,8 @@
 
             return $self('#parent')() == type;
         },
-        '#missing': hug.NATIVE_MISSING
+        '#missing': hug.NATIVE_MISSING,
+        'toString': hug.NATIVE_TO_STRING
     };
 
     function deepCopy(source) {
@@ -313,8 +319,6 @@
             }
         }, {});
     }
-
-    ;
 
     var uid = (function () {
         var seed = 0;
@@ -451,6 +455,7 @@
         proxied.id = uid();
         proxy('#value')(value || null);
 
+        proxy.toString = proxy('toString');
         return proxy;
     };
 

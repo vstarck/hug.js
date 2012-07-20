@@ -327,6 +327,17 @@ test('wrapped("#id")()', function () {
     equal(typeof hug()('#id'), 'function', 'hug()("#id") is a function');
     equal(typeof hug()('#id')(), 'number', 'hug()("#id")() is a number');
 });
+
+test('wrapped("toString")', function () {    
+    var wrapped = hug();
+
+    ok(typeof wrapped('#has?')('toString'), 'wrapped("#has?")("toString")');
+    equal(typeof wrapped('toString'), 'function', 'wrapped("toString") is a function');
+
+    strictEqual(wrapped.toString(), wrapped('toString')());
+});
+
+
 /*
  test('lazy binding (new object)', function() {
  });
