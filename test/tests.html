@@ -84,7 +84,7 @@
 			object('prop');
 		}, 'as property is undefined the getter raises an exception');
 	});
-	
+
 	test('object.#set (simple)', function() {
 		var object = hug(), value = {};
 		
@@ -94,7 +94,7 @@
 		strictEqual( object('prop'), value, 'object.prop is ok' );
 	});
 	
-	test('object.#set (multiple)', function() {
+	test('object.#set (batch)', function() {
 		var object = hug(), props = {
 			a: 1,
 			b: 2,
@@ -102,8 +102,8 @@
 		};
 		
 		strictEqual( object('#has?')('a'), false, 'object.a is unset' );
-		strictEqual( object('#has?')('b'), false, 'object.a is unset' );
-		strictEqual( object('#has?')('c'), false, 'object.a is unset' );
+		strictEqual( object('#has?')('b'), false, 'object.b is unset' );
+		strictEqual( object('#has?')('c'), false, 'object.c is unset' );
 		
 		object('#set')(props);
 		
@@ -116,14 +116,47 @@
 		equal( typeof object('c'), typeof props.c, 'object.c is ok' );
 	});
 	
-	test('private properties', function() {
-		var object = hug(), hidden = {};
+	test('object.#set using aliases', function() {
+		var object = hug(), value = {};
+		
+		strictEqual( object('#has?')('a'), false, 'object.a is unset' );
+		strictEqual( object('#has?')('b'), false, 'object.b is unset' );
+
+		strictEqual( object('#set')(['a', 'b'], value), object, 'object.#set is chainable' );
+
+		strictEqual( object('#has?')('a'), true, 'object.a is setted' );
+		strictEqual( object('#has?')('b'), true, 'object.b is setted' );
+
+		strictEqual( object('a'), value, 'object.a is ok');
+        strictEqual( object('b'), value, 'object.b is ok');
+	});
+	
+	test('raises on setting private properties from external proxy', function() {
+		var object = hug();
 		
 		strictEqual( object('#has?')('hidden'), false, 'object.hidden is unset' );
 		
-		object('#set')('private:hidden', hidden);
+		raises(function() {
+            object('#set')('private:hidden', 1);
+        });		
+	});
+	
+	test('setting private properties', function() {
+		var type = hug(), fooValue = 'foo';
 		
-		strictEqual( object('#has?')('hidden'), false, 'object.prop is unset' );	
+        type('#set')('init', function($self) {
+            $self('#set')('private:foo', fooValue);    
+        });
+
+        type('#set')('get_foo', function($self) {
+            return $self('private:foo');    
+        });
+
+        var instance = type('#new')();
+
+        strictEqual(instance('#has?')('foo'), false);
+        strictEqual(instance('get_foo')(), fooValue);
+
 	});
 	
 	test('self reference in privileged properties (aka methods)', function() {
@@ -144,17 +177,6 @@
 		
 		equal( typeof object('privileged')(), 'function', 'privileged function: $self reference must be a function' );		
 		equal( typeof object('non-privileged')(), 'undefined', 'non-privileged function: $self reference must be undefined' );		
-	});
-	
-	test('privileged properties (aka methods)', function() {
-		var object = hug(), hidden = {};
-		
-		object('#set')('private:hidden', hidden);		
-		object('#set')('seeker', function($self) {
-			return $self('hidden');
-		});
-		
-		strictEqual( object('seeker')(), hidden, 'privileged getter ok' );		
 	});
 	
 	test('catching missing properties', function() {

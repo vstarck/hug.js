@@ -3,22 +3,31 @@ hug.js
 
 (Useless) functional wrappers for native objects/values
 
-Standard properties of the instances:
+Features
+--------
+
+- Private properties
+- Virtual properties
+- Type hinting
+- Rest arguments
+- A lot of parens!
+
+Standard methods of the instances:
 -------------------------------------
 
-- #value
-- #id
-- #set
-- #new
-- #bind
-- #unbind
-- #has?
-- #is?
-- #missing
-- #toString
+- #value([newValue])
+- #id()
+- #set(name, value, modifiers)
+- #new([args])
+- #bind(target)
+- #unbind()
+- #has?(prop)
+- #is?(type)
+- #missing(name, args)
+- #toString()
 
 A few (useless) examples
---------------
+------------------------
 
 ###Wrapping native values###
 

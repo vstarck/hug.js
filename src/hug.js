@@ -176,13 +176,19 @@
 		if(!name) {
 			return this.proxy;
 		}
-	
-		if(/private\s*:\s*/.test(name)) {
-			this.private[name.replace(/private\s*:\s*/, '')] = value;
-		} else {
-            this[name] = value;
-        }
-		
+
+        if(!hug.isArray(name)) {
+            name = [name];
+        }	
+
+        name.forEach((function(name) {
+		    if(/private\s*:\s*/.test(name)) {
+			    this.private[name.replace(/private\s*:\s*/, '')] = value;
+		    } else {
+                this[name] = value;
+            }
+        }).bind(this));
+
 		return this.proxy;
     };
 
@@ -204,7 +210,7 @@
 			if(hug.isObject(name)) {
 				for(var p in name) {
 					if(name.hasOwnProperty(p)) {
-						__set(p, name[p]);
+						__set.call(this, p, name[p]);
 					}
 				}
 				
@@ -214,12 +220,18 @@
 			if(!name) {
 				return this.proxy;
 			}
-		
-			if(/private\s*:\s*/.test(name)) {
-				throw new Error('Cannot access private values!');
-			}
 
-            this[name] = value;					
+            if(!hug.isArray(name)) {
+                name = [name];
+            }	
+
+            name.forEach((function(name) {
+		        if(/private\s*:\s*/.test(name)) {
+				    throw new Error('Cannot access private values!');
+		        } else {
+                    this[name] = value;
+                }
+            }).bind(this));
 			
 			return this.proxy;
 		},
