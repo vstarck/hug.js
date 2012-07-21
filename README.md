@@ -37,7 +37,7 @@ var one = hug(1)
 one // "hug@41"
 one() // 1
 one('toString') // function
-one('toString')() // "1"
+one('toString')() // "hug@41"
 ```
 
 Setting properties
@@ -89,8 +89,7 @@ one('set')('toString', function($self) {
 	return String($self())
 })
 
-one;
-
+one; // "1"
 ```
 
 Using prefix syntax
