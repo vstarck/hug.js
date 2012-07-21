@@ -34,7 +34,7 @@ Wrapping native values
 ```javascript
 var one = hug(1)
 
-one // function
+one // "hug@41"
 one() // 1
 one('toString') // function
 one('toString')() // "1"
@@ -82,6 +82,15 @@ one('set')('+', function($self, another) {
 })
 
 one('+')(2) // 3
+
+one // "hug@41"
+
+one('set')('toString', function($self) {
+	return String($self())
+})
+
+one;
+
 ```
 
 Using prefix syntax
