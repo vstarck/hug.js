@@ -29,7 +29,7 @@ test('wrapping native objects: number', function () {
     ok(subject, 'hug(number) is not falsy');
     notEqual(subject, wrapped, 'hug(number) is not the number');
     equal(wrapped(), subject, 'hug(number)() gets the number');
-    equal(wrapped('#value')(), subject, 'hug(number)("#value")() gets the number');
+    equal(wrapped('value')(), subject, 'hug(number)("value")() gets the number');
 });
 
 test('wrapping native objects: string', function () {
@@ -41,7 +41,7 @@ test('wrapping native objects: string', function () {
     ok(subject, 'hug(string) is not falsy');
     notEqual(subject, wrapped, 'is not the same');
     equal(wrapped(), subject, 'accessing wrapped string');
-    equal(wrapped('#value')(), subject, 'accessing wrapped string by #value');
+    equal(wrapped('value')(), subject, 'accessing wrapped string by #value');
     equal(wrapped('length'), subject.length, 'accessing wrapped string properties');
 });
 
@@ -59,9 +59,9 @@ test('wrapping native objects: Object', function () {
 test('object.#id', function () {
     var object = hug();
 
-    equal(typeof object('#id'), 'function', 'object.#id is a function');
-    equal(typeof object('#id')(), 'number', 'the id is numeric');
-    equal(object('#id')() + 1, hug()('#id')(), 'the id is autoincremental');
+    equal(typeof object('id'), 'function', 'object.#id is a function');
+    equal(typeof object('id')(), 'number', 'the id is numeric');
+    equal(object('id')() + 1, hug()('id')(), 'the id is autoincremental');
 });
 
 test('accesing undefined properties raises an exception', function () {
@@ -75,11 +75,11 @@ test('accesing undefined properties raises an exception', function () {
 test('object.#has?', function () {
     var object = hug();
 
-    equal(typeof object('#has?'), 'function', 'object.#has? is a function');
-    equal(typeof object('#has?')('prop'), 'boolean', 'the result is always boolean');
-    equal(typeof object('#has?')('#has?'), 'boolean', 'the result is always boolean');
-    strictEqual(object('#has?')('prop'), false, 'the result is false');
-    strictEqual(object('#has?')('#has?'), true, 'the result is true');
+    equal(typeof object('has?'), 'function', 'object.#has? is a function');
+    equal(typeof object('has?')('prop'), 'boolean', 'the result is always boolean');
+    equal(typeof object('has?')('has?'), 'boolean', 'the result is always boolean');
+    strictEqual(object('has?')('prop'), false, 'the result is false');
+    strictEqual(object('has?')('has?'), true, 'the result is true');
     raises(function () {
         object('prop');
     }, 'as property is undefined the getter raises an exception');
@@ -88,9 +88,9 @@ test('object.#has?', function () {
 test('object.#set (simple)', function () {
     var object = hug(), value = {};
 
-    equal(typeof object('#set'), 'function', 'object.#set is a function');
-    strictEqual(object('#has?')('prop'), false, 'object.prop is unset');
-    strictEqual(object('#set')('prop', value), object, 'object.#set is chainable');
+    equal(typeof object('set'), 'function', 'object.#set is a function');
+    strictEqual(object('has?')('prop'), false, 'object.prop is unset');
+    strictEqual(object('set')('prop', value), object, 'object.#set is chainable');
     strictEqual(object('prop'), value, 'object.prop is ok');
 });
 
@@ -103,15 +103,15 @@ test('object.#set (batch)', function () {
         }
     };
 
-    strictEqual(object('#has?')('a'), false, 'object.a is unset');
-    strictEqual(object('#has?')('b'), false, 'object.b is unset');
-    strictEqual(object('#has?')('c'), false, 'object.c is unset');
+    strictEqual(object('has?')('a'), false, 'object.a is unset');
+    strictEqual(object('has?')('b'), false, 'object.b is unset');
+    strictEqual(object('has?')('c'), false, 'object.c is unset');
 
-    object('#set')(props);
+    object('set')(props);
 
-    strictEqual(object('#has?')('a'), true, 'object.a is setted');
-    strictEqual(object('#has?')('b'), true, 'object.b is setted');
-    strictEqual(object('#has?')('c'), true, 'object.c is setted');
+    strictEqual(object('has?')('a'), true, 'object.a is setted');
+    strictEqual(object('has?')('b'), true, 'object.b is setted');
+    strictEqual(object('has?')('c'), true, 'object.c is setted');
 
     strictEqual(object('a'), props.a, 'object.a is ok');
     strictEqual(object('b'), props.b, 'object.b is ok');
@@ -121,13 +121,13 @@ test('object.#set (batch)', function () {
 test('object.#set using aliases', function () {
     var object = hug(), value = {};
 
-    strictEqual(object('#has?')('a'), false, 'object.a is unset');
-    strictEqual(object('#has?')('b'), false, 'object.b is unset');
+    strictEqual(object('has?')('a'), false, 'object.a is unset');
+    strictEqual(object('has?')('b'), false, 'object.b is unset');
 
-    strictEqual(object('#set')(['a', 'b'], value), object, 'object.#set is chainable');
+    strictEqual(object('set')(['a', 'b'], value), object, 'object.#set is chainable');
 
-    strictEqual(object('#has?')('a'), true, 'object.a is setted');
-    strictEqual(object('#has?')('b'), true, 'object.b is setted');
+    strictEqual(object('has?')('a'), true, 'object.a is setted');
+    strictEqual(object('has?')('b'), true, 'object.b is setted');
 
     strictEqual(object('a'), value, 'object.a is ok');
     strictEqual(object('b'), value, 'object.b is ok');
@@ -136,27 +136,27 @@ test('object.#set using aliases', function () {
 test('raises on setting private properties from external proxy', function () {
     var object = hug();
 
-    strictEqual(object('#has?')('hidden'), false, 'object.hidden is unset');
+    strictEqual(object('has?')('hidden'), false, 'object.hidden is unset');
 
     raises(function () {
-        object('#set')('private:hidden', 1);
+        object('set')('private:hidden', 1);
     });
 });
 
 test('setting private properties', function () {
     var type = hug(), fooValue = 'foo';
 
-    type('#set')('init', function ($self) {
-        $self('#set')('private:foo', fooValue);
+    type('set')('init', function ($self) {
+        $self('set')('private:foo', fooValue);
     });
 
-    type('#set')('get_foo', function ($self) {
+    type('set')('get_foo', function ($self) {
         return $self('private:foo');
     });
 
-    var instance = type('#new')();
+    var instance = type('new')();
 
-    strictEqual(instance('#has?')('foo'), false);
+    strictEqual(instance('has?')('foo'), false);
     strictEqual(instance('get_foo')(), fooValue);
 
 });
@@ -164,10 +164,10 @@ test('setting private properties', function () {
 test('self reference in privileged properties (aka methods)', function () {
     var object = hug();
 
-    object('#set')('privileged', function ($self) {
+    object('set')('privileged', function ($self) {
         return $self;
     });
-    object('#set')('non-privileged', function () {
+    object('set')('non-privileged', function () {
         return arguments[0];
     });
 
@@ -184,9 +184,9 @@ test('self reference in privileged properties (aka methods)', function () {
 test('catching missing properties', function () {
     var object = hug();
 
-    strictEqual(object('#has?')('prop'), false, 'object.prop is unset');
+    strictEqual(object('has?')('prop'), false, 'object.prop is unset');
 
-    object('#set')('#missing', function ($self, name) {
+    object('set')('missing', function ($self, name) {
         return name;
     });
 
@@ -197,21 +197,21 @@ test('catching missing properties', function () {
 test('copying wrapped objects', function () {
     var object = hug(), anotherObject;
 
-    object('#set')('numeric', 1);
-    object('#set')('string', 'abc');
-    object('#set')('object', {});
+    object('set')('numeric', 1);
+    object('set')('string', 'abc');
+    object('set')('object', {});
 
-    object('#set')('sharedMethod', function () {
+    object('set')('sharedMethod', function () {
         return 1;
     });
 
-    anotherObject = object('#new')();
+    anotherObject = object('new')();
 
-    equal(typeof anotherObject('#id'), 'function', 'copied object must have the #id method');
-    notEqual(object('#id')(), anotherObject('#id')(), 'ids must be different');
-    strictEqual(anotherObject('#has?')('numeric'), true, 'numeric property must be setted');
-    strictEqual(anotherObject('#has?')('string'), true, 'string property must be setted');
-    strictEqual(anotherObject('#has?')('object'), true, 'object property must be setted');
+    equal(typeof anotherObject('id'), 'function', 'copied object must have the #id method');
+    notEqual(object('id')(), anotherObject('id')(), 'ids must be different');
+    strictEqual(anotherObject('has?')('numeric'), true, 'numeric property must be setted');
+    strictEqual(anotherObject('has?')('string'), true, 'string property must be setted');
+    strictEqual(anotherObject('has?')('object'), true, 'object property must be setted');
     equal(object('numeric'), anotherObject('numeric'), 'numeric property must be the same');
     equal(object('string'), anotherObject('string'), 'string property must be the same');
     notEqual(object('object'), anotherObject('object'), 'object property must be distinct');
@@ -225,18 +225,18 @@ test('copying wrapped objects', function () {
 test('object.#parent', function () {
     var number = hug();
 
-    number('#set')('init', function ($self, value) {
-        $self('#set')('private:value', value || 0);
+    number('set')('init', function ($self, value) {
+        $self('set')('private:value', value || 0);
     });
 
-    var one = number('#new')(1);
+    var one = number('new')(1);
 
-    strictEqual(one('#parent')(), number);
+    strictEqual(one('parent')(), number);
 
-    var two = one('#parent')()('#new')(2);
+    var two = one('parent')()('new')(2);
 
-    strictEqual(one('#parent')(), two('#parent')());
-    strictEqual(two('#parent')(), number);
+    strictEqual(one('parent')(), two('parent')());
+    strictEqual(two('parent')(), number);
     notEqual(one, two);
     notEqual(one(), two());
 });
@@ -244,14 +244,14 @@ test('object.#parent', function () {
 test('type.init (type constructor)', function () {
     var number = hug();
 
-    number('#set')('init', function ($self, value) {
-        $self('#set')('private:value', Number(value));
-        $self('#set')('foo', 'foo');
+    number('set')('init', function ($self, value) {
+        $self('set')('private:value', Number(value));
+        $self('set')('foo', 'foo');
     });
 
-    var one = number('#new')('1');
+    var one = number('new')('1');
 
-    strictEqual(one('#has?')('foo'), true);
+    strictEqual(one('has?')('foo'), true);
     strictEqual(one('foo'), 'foo');
     strictEqual(one(), 1);
 });
@@ -259,32 +259,32 @@ test('type.init (type constructor)', function () {
 test('object.#is?', function () {
     var number = hug();
 
-    number('#set')('init', function ($self, value) {
-        $self('#set')('private:value', value || 0);
+    number('set')('init', function ($self, value) {
+        $self('set')('private:value', value || 0);
     });
 
-    var one = number('#new')(1);
+    var one = number('new')(1);
 
-    strictEqual(one('#is?')(number), true, 'one.#is? number');
+    strictEqual(one('is?')(number), true, 'one.#is? number');
 
-    var two = one('#new')(2);
+    var two = one('new')(2);
 
-    strictEqual(two('#is?')(number), true, 'two.#is? (recursive)');
+    strictEqual(two('is?')(number), true, 'two.#is? (recursive)');
 
 });
 
 test('wrapped value in type instance is valid', function () {
     var number = hug();
 
-    number('#set')('init', function ($self, value) {
-        $self('#set')('private:value', value || 0);
+    number('set')('init', function ($self, value) {
+        $self('set')('private:value', value || 0);
     });
 
-    var one = number('#new')(1);
+    var one = number('new')(1);
 
     equal(one(), 1);
 
-    var two = one('#parent')()('#new')(2);
+    var two = one('parent')()('new')(2);
 
     equal(two(), 2);
 });
@@ -301,7 +301,7 @@ test('lazy binding (new object)', function () {
     equal(sum(), aNumber() + anotherNumber(), 'result is ok (3)');
     equal(sum(), 3, 'result is ok (3)');
 
-    aNumber('#value')(8);
+    aNumber('value')(8);
 
     equal(sum(), aNumber() + anotherNumber(), 'result is ok (10)');
     equal(sum(), 10, 'result is ok (10)');
@@ -316,22 +316,35 @@ test('lazy binding + unbinding (new object)', function () {
 
     equal(sum(), aNumber() + anotherNumber(), 'result is ok (3)');
 
-    sum('#unbind')();
-    aNumber('#value')(8);
+    sum('unbind')();
+    aNumber('value')(8);
 
     notEqual(sum(), aNumber() + anotherNumber(), 'binding is broken');
     equal(sum(), 3, 'result is ok (3)');
 });
 
-test('wrapped("#id")()', function () {
-    equal(typeof hug()('#id'), 'function', 'hug()("#id") is a function');
-    equal(typeof hug()('#id')(), 'number', 'hug()("#id")() is a number');
+test('wrapped("id")()', function () {
+    equal(typeof hug()('id'), 'function', 'hug()("id") is a function');
+    equal(typeof hug()('id')(), 'number', 'hug()("id")() is a number');
 });
 
 test('wrapped("toString")', function () {    
     var wrapped = hug();
 
-    ok(typeof wrapped('#has?')('toString'), 'wrapped("#has?")("toString")');
+    ok(typeof wrapped('has?')('toString'), 'wrapped("has?")("toString")');
+    equal(typeof wrapped('toString'), 'function', 'wrapped("toString") is a function');
+
+    strictEqual(wrapped.toString(), wrapped('toString')());
+});
+
+test('wrapped("toString") override', function () {    
+    var wrapped = hug();
+
+	wrapped('set')('toString', function($self) {
+		return 'Hello world!';
+	});
+	
+    ok(typeof wrapped('has?')('toString'), 'wrapped("has?")("toString")');
     equal(typeof wrapped('toString'), 'function', 'wrapped("toString") is a function');
 
     strictEqual(wrapped.toString(), wrapped('toString')());

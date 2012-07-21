@@ -26,23 +26,23 @@
 	one; // function
 	one(); // 1
 
-	one('#set')('myProp', 'value!');
+	one('set')('myProp', 'value!');
 	one('myProp'); // "value!"
 
-	one('#set')('+', function($self, another) {
+	one('set')('+', function($self, another) {
 		return $self() + another;
 	});
 	one('+')(2); // 3
 
 	var number = hug();
 
-	number('#set')('+', function($self, $rest) {
+	number('set')('+', function($self, $rest) {
 		return $self() + $rest('reduce')(function(memo, current) {
 			return memo + (typeof current == 'function' ? current() : current)
 		});
 	});
 
-	var two = number('#new')(2);
+	var two = number('new')(2);
 
 	two('+', 1, 2, 3, 4); // 12
 
@@ -50,19 +50,19 @@
 	list = hug()
 
 	list
-		('#set')(['add', 'push', '<<'], function($rest) {})
-		('#set')('remove', function(value) {})
-		('#set')(['clear', 'empty'], function(value) {})
-		('#set')(['size', 'length'], function(value) {})
+		('set')(['add', 'push', '<<'], function($rest) {})
+		('set')('remove', function(value) {})
+		('set')(['clear', 'empty'], function(value) {})
+		('set')(['size', 'length'], function(value) {})
 
-		('#set')(['forEach', 'each'], function(iterator, memo) {})
-		('#set')(['reduce', 'inject', 'foldl'], function(iterator, memo) {})
-		('#set')(['map', 'collect'], function(iterator) {})
-		('#set')(['find', 'detect'], function(iterator) {})
-		('#set')(['filter', 'select'], function(iterator) {})
-		('#set')(['all', 'every'], function(iterator) {})
+		('set')(['forEach', 'each'], function(iterator, memo) {})
+		('set')(['reduce', 'inject', 'foldl'], function(iterator, memo) {})
+		('set')(['map', 'collect'], function(iterator) {})
+		('set')(['find', 'detect'], function(iterator) {})
+		('set')(['filter', 'select'], function(iterator) {})
+		('set')(['all', 'every'], function(iterator) {})
 
-	var genres = list('#new')
+	var genres = list('new')
 
 	genres('<<', 'Pop', 'Rock', 'Metal', 'Progressive')
 
@@ -85,7 +85,7 @@
 
 	var magicProperties = hug()
 
-	magicProperties('#set')('#missing', function(name) {
+	magicProperties('set')('missing', function(name) {
 		return function() { return 'missing: ' + name }
 	});
 
@@ -94,19 +94,19 @@
 	-----------------------------------------------------------------------
 
 	var a = hug()
-	var b = a('#new')()
-	var c = b('#new')()
+	var b = a('new')()
+	var c = b('new')()
 
 	a == b('parent')()
 	b == c('parent')()
 
-	var d = c('parent')('parent')()('#new')()
+	var d = c('parent')('parent')()('new')()
 
 	-----------------------------------------------------------------------
 
 	var a = hug()
 
-	hug('#set')('private:foo')(1) // Error!
+	hug('set')('private:foo')(1) // Error!
 
 
 */
@@ -135,7 +135,7 @@
 
     hug.is = function (object, type) {
         if (typeof object == 'function') {
-            return object('#is?', type);
+            return object('is?', type);
         }
 
         return false;
@@ -145,7 +145,7 @@
     hug.bind = function (initializer) {
         var instance = hug();
 
-        instance('#set')('#value', initializer);
+        instance('set')('value', initializer);
 
         return instance;
     };
@@ -159,7 +159,7 @@
             return $self('value') ? $self('value') : null;
         }
 
-        $self('#set')('private:value', value);
+        $self('set')('private:value', value);
     };
 
     hug.PRIVILEGED_SETTER = function __set(name, value, modifiers) {
@@ -193,24 +193,24 @@
     };
 
     hug.NATIVE_TO_STRING = function __toString($self) {
-        return '' + $self().toString();
+        return 'hug@' + $self('id')();
     };
 
     hug.SPLAT_OPERATOR = '$rest';
 
-    // TODO throw away #?
+    // TODO throw away ?
     hug.BASE = {
-        '#value': hug.NATIVE_VALUE,
-        '#id': function __id($self) {
-            return $self('id');
+        'value': hug.NATIVE_VALUE,
+        'id': function __id($self) {
+            return $self('object_id');
         },
         // TODO implement alias setting
         /*
-         hug()('#set')(['+', 'add'], function() {
+         hug()('set')(['+', 'add'], function() {
          // ...
          });
          */
-        '#set': function __set(name, value, modifiers) {
+        'set': function __set(name, value, modifiers) {
             if (hug.isObject(name)) {
                 for (var p in name) {
                     if (name.hasOwnProperty(p)) {
@@ -239,46 +239,61 @@
 
             return this.proxy;
         },
-        '#new': function __new($self, value) {
+        'new': function __new($self, value) {
             var instance = create(value, this), proxy;
 
             proxy = this.proxy;
 
-            instance('#set')('#parent', function __parent() {
+            instance('set')('parent', function __parent() {
                 return proxy;
             });
 
-            if (instance('#has?')('init')) {
+            if (instance('has?')('init')) {
                 instance('init').apply(null, [].slice.call(arguments, 1));
             }
 
             return instance;
         },
-        '#bind': function __bind($self, initializer) {
+        'bind': function __bind($self, initializer) {
             $self
-                ('#set')('#value', initializer)
+                ('set')('value', initializer)
         },
-        '#unbind': function __bind($self, initializer) {
+        'unbind': function __bind($self, initializer) {
             var currentValue = $self();
 
             $self
-                ('#set')('#value', hug.NATIVE_VALUE)
-                ('#value')(currentValue)
+                ('set')('value', hug.NATIVE_VALUE)
+                ('value')(currentValue)
         },
         // TODO what about virtual properties?
         // TODO what about private properties?
-        '#has?': function __has($self, name) {
+        'has?': function __has($self, name) {
             return this[name] !== undefined;
         },
         // TODO implement ancestor lookup
-        '#is?': function __is($self, type) {
-            if (!$self('#has?')('#parent')) {
+        'is?': function __is($self, type) {
+            if (!$self('has?')('parent')) {
                 return false;
             }
 
-            return $self('#parent')() == type;
+			var current = $self;
+			
+			if(current('parent')() == type) {
+				return true;
+			}
+				
+			while(current && current('has?')('parent')) {
+				if(current('parent')() == type) {
+					return true;
+				}
+				
+				current = current('parent')();
+			}
+						
+            return false;
         },
-        '#missing': hug.NATIVE_MISSING,
+        'missing': hug.NATIVE_MISSING,
+		// TODO check custom override!
         'toString': hug.NATIVE_TO_STRING
     };
 
@@ -339,8 +354,8 @@
             return this['private'].value[name];
         }
 
-        if (this['#missing'] !== hug.BASE['#missing']) {
-            return __exec.call(this, this['#missing'], [name]);
+        if (this['missing'] !== hug.BASE['missing']) {
+            return __exec.call(this, this['missing'], [name]);
         }
 
         return undefined;
@@ -348,7 +363,7 @@
 
     function __get(name) {
         if (name === undefined) {
-            return this.proxy('#value')();
+            return this.proxy('value')();
         }
 
         if (/private\s*:\s*/.test(name)) {
@@ -365,7 +380,7 @@
             return value;
         }
 
-        __exec.call(this, this['#missing'], [name]);
+        __exec.call(this, this['missing'], [name]);
     }
 
     function __privileged_proxy(name) {
@@ -373,7 +388,7 @@
             return __get.call(this, name);
         }
 
-        if (name == '#set') {
+        if (name == 'set') {
             return hug.PRIVILEGED_SETTER.bind(this);
         }
 
@@ -421,11 +436,11 @@
     // TODO implement
     /*
 
-     hug()('#set')('typedMethod', function(foo, bar, baz) {
+     hug()('set')('typedMethod', function(foo, bar, baz) {
      // ...
      }, { foo: hug.IS.NUMBER, bar: hug.IS.ARRAY })
 
-     hug()('#set')('typedMethod', function(Array$foo, MyType$bar, baz) {
+     hug()('set')('typedMethod', function(Array$foo, MyType$bar, baz) {
      // ...
      })
 
@@ -452,10 +467,12 @@
 
         proxied.proxy = proxy;
 
-        proxied.id = uid();
-        proxy('#value')(value || null);
+        proxied.object_id = uid();
+        proxy('value')(value || null);
 
-        proxy.toString = proxy('toString');
+        proxy.toString = function() {
+			return proxy('toString')();
+		};
         return proxy;
     };
 
