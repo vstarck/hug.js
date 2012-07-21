@@ -8,28 +8,28 @@ Features
 
 - Private properties
 - Virtual properties
-- Type hinting
-- Rest arguments
+- Type hinting (WIP)
+- Rest arguments (WIP)
 - A lot of parens!
 
 Standard methods of the instances:
 -------------------------------------
 
-- #value([newValue])
-- #id()
-- #set(name, value, modifiers)
-- #new([args])
-- #bind(target)
-- #unbind()
-- #has?(prop)
-- #is?(type)
-- #missing(name, args)
-- #toString()
+- value([newValue])
+- id()
+- set(name, value, modifiers)
+- new([args])
+- bind(target)
+- unbind()
+- has?(prop)
+- is?(type)
+- missing(name, args)
+- toString()
 
 A few (useless) examples
 ------------------------
 
-###Wrapping native values###
+Wrapping native values
 
 ```javascript
 var one = hug(1)
@@ -40,60 +40,56 @@ one('toString') // function
 one('toString')() // "1"
 ```
 
-###Setting properties###
+Setting properties
 
 ```javascript
 var one = hug(1)
 
-one('#set')('myProp', 'value!')
+one('set')('myProp', 'value!')
 one('myProp') // "value!"
 
 // Chained definitions
 one
-	('#set')('a', 1)
-	('#set')('b', 2)
-	('#set')('c', 3)
+	('set')('a', 1)
+	('set')('b', 2)
+	('set')('c', 3)
 	
 // Batch syntax
-one('#set')({
+one('set')({
 	d: 4,
-	e: 5,
-	'*': function($self, number) {
-		return $self() * number
-	}
-})
-	
-one('*', 4) // 4
+	e: 5	
+})	
 ```
 
-###Checking for properties###
+Checking for properties
 
 ```javascript
 var subject = hug()
 
-subject('#set')('myProp', 'value!')
-subject('#has?')('myProp') // true
-subject('#has?')('anotherProp') // false
+subject('set')('myProp', 'value!')
+subject('has?')('myProp') // true
+subject('has?')('anotherProp') // false
 ```
 
-###Setting 'methods' (callable properties)###
+Setting 'methods' (callable properties)
 
 ```javascript	
 var one = hug(1)
 
-// $self is a privileged self-reference (can fetch private properties, etc)
-one('#set')('+', function($self, another) {
+// $self is a privileged self-reference (can get/set private properties)
+one('set')('+', function($self, another) {
 	return $self() + another
 })
+
 one('+')(2) // 3
 ```
 
-###Using prefix syntax###
+Using prefix syntax
 
 ```javascript	
 var one = hug(1)
 
-one('#set')('+', function($self, a, b, c) {
+one('set')('+', function($self, a, b, c) {
 	return $self() + a + b + c
 })
 
@@ -103,12 +99,12 @@ one('+', 2, 3, 4) // 10
 one('+')(2, 3, 4) // 10
 ```
 
-###Catching virtual properties###
+Catching virtual properties
 
 ```javascript	
 var myObj = hug()
 
-myObj('#set')('#missing', function($self, name) {
+myObj('set')('missing', function($self, name) {
 	return 'Requested: ' + name
 })
 
@@ -116,42 +112,41 @@ myObj('a') // "Requested: a"
 myObj('foo') // "Requested: foo"
 ```
 
-###Spawning instances###
+Spawning instances
 
 ```javascript	
 // Create a wrapped object
 var Color = hug()
 
 // Set the constructor
-Color('#set')('init', function($self, r, g, b) {
+Color('set')('init', function($self, r, g, b) {
 	$self
-		('#set')('r', r || 0)
-		('#set')('g', g || 0)
-		('#set')('b', b || 0)
+		('set')('r', r || 0)
+		('set')('g', g || 0)
+		('set')('b', b || 0)
 })
 
 // A few methods
-Color('#set')('+', function($self, another) {
-	return Color('#new')(
+Color('set')('+', function($self, another) {
+	return Color('new')(
 		$self('r') + another('r'),
 		$self('g') + another('g'),
 		$self('b') + another('b')
 	)
 })
 
-// Object value getter
-Color('#set')('#value', function($self) {
+Color('set')('toString', function($self) {
 	return '#' +
 			$self('r').toString(16) + 
 			$self('g').toString(16) + 
 			$self('b').toString(16)
 })
 
-var red = Color('#new')(255, 0, 0)
-var blue = Color('#new')(0, 0, 255)
+var red = Color('new')(255, 0, 0)
+var blue = Color('new')(0, 0, 255)
 
-red() // #ff0000
-blue() // #0000ff
+red.toString() // #ff0000
+blue.toString() // #0000ff
 
 var violet = red('+')(blue)
 
@@ -159,32 +154,32 @@ violet('r') // 255
 violet('g') // 0
 violet('b') // 255
 
-violet('#is?')(Color) // true
-violet() // #ff00ff
+violet('is?')(Color) // true
+violet.toString() // #ff00ff
 ```
 
 
-###Lazy binding###
+Lazy binding
 
 ```javascript
-Color('#set')('brightness', function($self, value) {
+Color('set')('brightness', function($self, value) {
 	return $self
-		('#set')('r', $self('r') * value)
-		('#set')('g', $self('g') * value)
-		('#set')('b', $self('b') * value)
+		('set')('r', $self('r') * value)
+		('set')('g', $self('g') * value)
+		('set')('b', $self('b') * value)
 })
 
-var main = Color('#new')(140, 30, 90)
+var main = Color('new')(140, 30, 90)
 
 // 'darker' is a binded reference 'main'
-var darker = hug()('#bind')(function() {
-	return main('#new')()
+var darker = hug()('bind')(function() {
+	return main('new')()
 		('brightness')(0.7)
 })
 
 darker('r') // 98 <- (main.r * 0.7)
 
-main('#set')('r', 70)
+main('set')('r', 70)
 
 darker('r') // 49 <- (main.r * 0.7)
 ```
