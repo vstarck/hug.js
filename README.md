@@ -3,6 +3,8 @@ hug.js
 
 (Useless) functional wrappers for native objects/values
 
+hug.js is licensed under the terms of the MIT License.
+
 Features
 --------
 

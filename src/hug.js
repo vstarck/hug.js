@@ -4,21 +4,24 @@
  *  Features
  *      - Private properties
  *      - Virtual properties
- *      - Splat'd methods
- *      - Type hinting
+ *      - Splat'd methods (WIP)
+ *      - Type hinting (WIP)
  *
+ *
+ * (c) 2011 - 2012 Valentin Starck (@aijoona)
+ * 
+ * hug.js may be freely distributed under the MIT license.
  */
 
 
 /*
 	TODO
-		fix private set
 		fix splat operator
 		add type hinting
 		add lazy binding
 		define fallback to value properties
-		define inheritence chain
         define autowrap behavior for object properties
+        privileged setter should return privileged proxy, not the public one
 
 
 	var one = hug(1);
@@ -45,7 +48,6 @@
 	var two = number('new')(2);
 
 	two('+', 1, 2, 3, 4); // 12
-
 
 	list = hug()
 
@@ -81,34 +83,6 @@
 			return memo + current
 		}, '')
 
-	----------------------------------------------------------------------
-
-	var magicProperties = hug()
-
-	magicProperties('set')('missing', function(name) {
-		return function() { return 'missing: ' + name }
-	});
-
-	magicProperties('foo!')() // "missing: foo!"
-
-	-----------------------------------------------------------------------
-
-	var a = hug()
-	var b = a('new')()
-	var c = b('new')()
-
-	a == b('parent')()
-	b == c('parent')()
-
-	var d = c('parent')('parent')()('new')()
-
-	-----------------------------------------------------------------------
-
-	var a = hug()
-
-	hug('set')('private:foo')(1) // Error!
-
-
 */
 ;(function (global) {
     var hug = function (prop) {
@@ -141,6 +115,8 @@
         return false;
     };
 
+    hug.PRIVATE_RE = /private\s*:\s*/;
+
     // TODO bind wrapped object not the value
     hug.bind = function (initializer) {
         var instance = hug();
@@ -170,6 +146,7 @@
                 }
             }
 
+            // TODO this should return the privileged proxy, not the public one
             return this.proxy;
         }
 
@@ -182,8 +159,38 @@
         }
 
         name.forEach((function (name) {
-            if (/private\s*:\s*/.test(name)) {
-                this.private[name.replace(/private\s*:\s*/, '')] = value;
+            if (hug.PRIVATE_RE.test(name)) {
+                this.private[name.replace(hug.PRIVATE_RE, '')] = value;
+            } else {
+                this[name] = value;
+            }
+        }).bind(this));
+
+        return this.proxy;
+    };
+
+    hug.PUBLIC_SETTER = function __set(name, value, modifiers) {
+        if (hug.isObject(name)) {
+            for (var p in name) {
+                if (name.hasOwnProperty(p)) {
+                    __set.call(this, p, name[p]);
+                }
+            }
+
+            return this.proxy;
+        }
+
+        if (!name) {
+            return this.proxy;
+        }
+
+        if (!hug.isArray(name)) {
+            name = [name];
+        }
+
+        name.forEach((function (name) {
+            if (hug.PRIVATE_RE.test(name)) {
+                throw new Error('Cannot access private values!');
             } else {
                 this[name] = value;
             }
@@ -198,47 +205,12 @@
 
     hug.SPLAT_OPERATOR = '$rest';
 
-    // TODO throw away ?
     hug.BASE = {
         'value': hug.NATIVE_VALUE,
         'id': function __id($self) {
             return $self('object_id');
         },
-        // TODO implement alias setting
-        /*
-         hug()('set')(['+', 'add'], function() {
-         // ...
-         });
-         */
-        'set': function __set(name, value, modifiers) {
-            if (hug.isObject(name)) {
-                for (var p in name) {
-                    if (name.hasOwnProperty(p)) {
-                        __set.call(this, p, name[p]);
-                    }
-                }
-
-                return this.proxy;
-            }
-
-            if (!name) {
-                return this.proxy;
-            }
-
-            if (!hug.isArray(name)) {
-                name = [name];
-            }
-
-            name.forEach((function (name) {
-                if (/private\s*:\s*/.test(name)) {
-                    throw new Error('Cannot access private values!');
-                } else {
-                    this[name] = value;
-                }
-            }).bind(this));
-
-            return this.proxy;
-        },
+        'set': hug.PUBLIC_SETTER,
         'new': function __new($self, value) {
             var instance = create(value, this), proxy;
 
@@ -270,7 +242,6 @@
         'has?': function __has($self, name) {
             return this[name] !== undefined;
         },
-        // TODO implement ancestor lookup
         'is?': function __is($self, type) {
             if (!$self('has?')('parent')) {
                 return false;
@@ -293,7 +264,6 @@
             return false;
         },
         'missing': hug.NATIVE_MISSING,
-		// TODO check custom override!
         'toString': hug.NATIVE_TO_STRING
     };
 
@@ -326,16 +296,18 @@
     }
 
     function merge(target) {
-        return __slice.call(arguments, 1).forEach(function (current) {
+        __slice.call(arguments, 1).forEach(function (current) {
             for (var p in current) {
                 if (current.hasOwnProperty(p)) {
                     target[p] = typeof current[p] == 'object' ? deepCopy(current[p]) : current[p];
                 }
             }
         }, {});
+
+        return target;
     }
 
-    var uid = (function () {
+    hug.uid = (function () {
         var seed = 0;
 
         return function uid() {
@@ -357,8 +329,6 @@
         if (this['missing'] !== hug.BASE['missing']) {
             return __exec.call(this, this['missing'], [name]);
         }
-
-        return undefined;
     }
 
     function __get(name) {
@@ -366,7 +336,7 @@
             return this.proxy('value')();
         }
 
-        if (/private\s*:\s*/.test(name)) {
+        if (hug.PRIVATE_RE.test(name)) {
             throw new Error('Cannot access private values!');
         }
 
@@ -449,15 +419,16 @@
         return fn;
     }
 
-    var BASE = function __base() {
+    var Proxy = function __base() {
     };
 
-    BASE.prototype = hug.BASE;
+    Proxy.prototype = hug.BASE;
+    Proxy.prototype.constructor = Proxy;
 
     create = function (value, body) {
         var proxy, proxied;
 
-        proxied = new BASE;
+        proxied = new Proxy;
 
         merge(proxied, { 'private': {} }, body);
 
@@ -467,12 +438,13 @@
 
         proxied.proxy = proxy;
 
-        proxied.object_id = uid();
+        proxied.object_id = hug.uid();
         proxy('value')(value || null);
 
         proxy.toString = function() {
 			return proxy('toString')();
 		};
+
         return proxy;
     };
 
