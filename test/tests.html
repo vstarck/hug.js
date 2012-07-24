@@ -310,8 +310,9 @@ test('lazy binding (new object)', function () {
 test('lazy binding + unbinding (new object)', function () {
     var aNumber = hug(1);
     var anotherNumber = hug(2);
-    var sum = hug('bind')(function () {
-        return aNumber() + anotherNumber();
+
+    var sum = hug()('bind')(function () {
+        return hug(aNumber() + anotherNumber());
     });
 
     equal(sum(), aNumber() + anotherNumber(), 'result is ok (3)');

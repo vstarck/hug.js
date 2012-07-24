@@ -20,6 +20,7 @@ Standard methods of the instances:
 - value([newValue])
 - id()
 - set(name, value, modifiers)
+- get(name)
 - new([args])
 - bind(target)
 - unbind()
@@ -38,6 +39,7 @@ var one = hug(1)
 
 one // "hug@41"
 one() // 1
+one('get')('toString') // function
 one('toString') // function
 one('toString')() // "hug@41"
 ```
@@ -70,7 +72,10 @@ var subject = hug()
 
 subject('set')('myProp', 'value!')
 subject('has?')('myProp') // true
+
 subject('has?')('anotherProp') // false
+subject('anotherProp') // Error!
+subject('get')('anotherProp') // null
 ```
 
 Setting 'methods' (callable properties)
