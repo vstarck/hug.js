@@ -10,6 +10,7 @@ Features
 
 - Private properties
 - Virtual properties
+- Object binding
 - Type hinting (WIP)
 - Rest arguments (WIP)
 - A lot of parens!
@@ -39,9 +40,10 @@ var one = hug(1)
 
 one // "hug@41"
 one() // 1
-one('get')('toString') // function
 one('toString') // function
+one('get')('toString') // function
 one('toString')() // "hug@41"
+one('get')('toString')() // "hug@41"
 ```
 
 Setting properties

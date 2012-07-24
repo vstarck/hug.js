@@ -9,83 +9,20 @@
  *      - Type hinting (WIP)
  *
  *
+ *	TODO
+ *		fix splat operator
+ *		add type hinting
+ *		add lazy binding
+ *		define fallback to value properties
+ *      define autowrap behavior for object properties
+ *      privileged setter should return privileged proxy, not the public one
+ *
+ *
  * (c) 2011 - 2012 Valentin Starck (@aijoona)
  * 
  * hug.js may be freely distributed under the MIT license.
  */
-
-
-/*
-	TODO
-		fix splat operator
-		add type hinting
-		add lazy binding
-		define fallback to value properties
-        define autowrap behavior for object properties
-        privileged setter should return privileged proxy, not the public one
-
-
-	var one = hug(1)
-
-	one // function
-	one() // 1
-
-	one('set')('myProp', 'value!')
-	one('myProp') // "value!"
-
-	one('set')('+', function($self, another) {
-		return $self() + another
-	})
-	one('+')(2) // 3
-
-	var number = hug()
-
-	number('set')('+', function($self, $rest) {
-		return $self() + $rest('reduce')(function(memo, current) {
-			return memo + (typeof current == 'function' ? current() : current)
-		})
-	})
-
-	var two = number('new')(2)
-
-	two('+', 1, 2, 3, 4) // 12
-
-	list = hug()
-
-	list
-		('set')(['add', 'push', '<<'], function($rest) {})
-		('set')('remove', function(value) {})
-		('set')(['clear', 'empty'], function(value) {})
-		('set')(['size', 'length'], function(value) {})
-
-		('set')(['forEach', 'each'], function(iterator, memo) {})
-		('set')(['reduce', 'inject', 'foldl'], function(iterator, memo) {})
-		('set')(['map', 'collect'], function(iterator) {})
-		('set')(['find', 'detect'], function(iterator) {})
-		('set')(['filter', 'select'], function(iterator) {})
-		('set')(['all', 'every'], function(iterator) {})
-
-	var genres = list('new')
-
-	genres('<<', 'Pop', 'Rock', 'Metal', 'Progressive')
-
-	genres('size')() // 4
-
-	genres('+', genres)('size')() // 8
-
-	genres
-		('each')(function(current) {
-			console.log(current)
-		})
-		('map')(function(current) {
-			return current
-		})
-		('reduce')(function(memo, current) {
-			return memo + current
-		}, '')
-
-*/
-;(function (global) {
+;(function (global, undefined) {
     var hug = function (prop) {
         if (hug[prop]) {
             if (typeof hug[prop] == 'function' && arguments.length > 1) {
@@ -170,7 +107,7 @@
             return this.proxy(name)        
         }
 
-        return null;
+        return null
     }
 
     hug.PUBLIC_SETTER = function __set(name, value, modifiers) {
@@ -235,7 +172,7 @@
             $self                
                 ('set')('private:@binding', initializer)
 
-            return this.proxy;
+            return this.proxy
         },
         'unbind': function __unbind() {
             if(!this['private']['@binding']) {
@@ -246,9 +183,9 @@
 
             this['private']['@binding'] = function() {
                 return current
-            };
+            }
 
-            return this.proxy;
+            return this.proxy
         },
         // TODO what about virtual properties?
         // TODO what about private properties?
@@ -447,8 +384,8 @@
 
         proxy = function __$proxy(name) {
             if(['id', 'unbind'].indexOf(name) === -1 && proxied['private']['@binding']) {
-                target = proxied['private']['@binding']();
-                return target.apply(target, arguments);
+                target = proxied['private']['@binding']()
+                return target.apply(target, arguments)
             }
 
             return __get.apply(proxied, arguments)
