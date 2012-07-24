@@ -293,7 +293,7 @@ test('lazy binding (new object)', function () {
     var aNumber = hug(1);
     var anotherNumber = hug(2);
     var sum = hug('bind')(function () {
-        return aNumber() + anotherNumber();
+        return hug(aNumber() + anotherNumber());
     });
 
     ok(sum, 'binding result is not falsy');

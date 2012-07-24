@@ -237,17 +237,16 @@
 
             return this.proxy;
         },
-        'unbind': function __unbind($self) {
+        'unbind': function __unbind() {
             if(!this['private']['@binding']) {
                 return this.proxy
             }
 
-            var current = $self('@binding')
+            var current = this['private']['@binding']()
 
-            $self                
-                ('set')('private:@binding', function() {
-                    return current
-                })
+            this['private']['@binding'] = function() {
+                return current
+            };
 
             return this.proxy;
         },
