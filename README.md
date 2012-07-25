@@ -10,8 +10,7 @@ Features
 
 - Private properties
 - Virtual properties
-- Type hinting (WIP)
-- Rest arguments (WIP)
+- Object binding
 - A lot of parens!
 
 Standard methods of the instances:
@@ -39,9 +38,10 @@ var one = hug(1)
 
 one // "hug@41"
 one() // 1
-one('get')('toString') // function
 one('toString') // function
+one('get')('toString') // function
 one('toString')() // "hug@41"
+one('get')('toString')() // "hug@41"
 ```
 
 Setting properties

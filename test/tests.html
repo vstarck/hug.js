@@ -292,8 +292,8 @@ test('wrapped value in type instance is valid', function () {
 test('lazy binding (new object)', function () {
     var aNumber = hug(1);
     var anotherNumber = hug(2);
-    var sum = hug('bind')(function () {
-        return aNumber() + anotherNumber();
+    var sum = hug()('bind')(function () {
+        return hug(aNumber() + anotherNumber());
     });
 
     ok(sum, 'binding result is not falsy');
@@ -351,11 +351,6 @@ test('wrapped("toString") override', function () {
     strictEqual(wrapped.toString(), wrapped('toString')());
 });
 
-
-/*
- test('lazy binding (new object)', function() {
- });
- */
 
 // test type hinting
 // test lazy binding
