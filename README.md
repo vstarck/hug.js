@@ -28,10 +28,10 @@ Standard methods of the instances:
 - missing(name, args)
 - toString()
 
-A few (useless) examples
-------------------------
+##A few (useless) examples##
 
-Wrapping native values
+
+###Wrapping native values###
 
 ```javascript
 var one = hug(1)
@@ -44,7 +44,7 @@ one('toString')() // "hug@41"
 one('get')('toString')() // "hug@41"
 ```
 
-Setting properties
+###Setting properties###
 
 ```javascript
 var one = hug(1)
@@ -65,7 +65,7 @@ one('set')({
 })	
 ```
 
-Checking for properties
+###Checking for properties###
 
 ```javascript
 var subject = hug()
@@ -78,7 +78,7 @@ subject('anotherProp') // Error!
 subject('get')('anotherProp') // null
 ```
 
-Setting 'methods' (callable properties)
+###Setting 'methods' (callable properties)###
 
 ```javascript	
 var one = hug(1)
@@ -99,7 +99,7 @@ one('set')('toString', function($self) {
 one; // "1"
 ```
 
-Using prefix syntax
+###Using prefix syntax###
 
 ```javascript	
 var one = hug(1)
@@ -114,7 +114,7 @@ one('+', 2, 3, 4) // 10
 one('+')(2, 3, 4) // 10
 ```
 
-Catching virtual properties
+###Catching virtual properties###
 
 ```javascript	
 var myObj = hug()
@@ -127,7 +127,7 @@ myObj('a') // "Requested: a"
 myObj('foo') // "Requested: foo"
 ```
 
-Spawning instances
+###Spawning instances###
 
 ```javascript	
 // Create a wrapped object
@@ -174,7 +174,7 @@ violet.toString() // #ff00ff
 ```
 
 
-Lazy binding
+###Lazy binding###
 
 ```javascript
 Color('set')('brightness', function($self, value) {
