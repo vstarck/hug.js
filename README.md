@@ -3,7 +3,28 @@ hug.js
 
 (Useless) functional wrappers for native objects/values
 
-hug.js is licensed under the terms of the MIT License.
+
+```javascript	
+var Color = hug()
+
+Color('set')('init', function($self, r, g, b) {
+	$self
+		('set')('r', r || 0)
+		('set')('g', g || 0)
+		('set')('b', b || 0)
+})
+
+Color('set')('+', function($self, another) {
+	return Color('new')(
+		$self('r') + another('r'),
+		$self('g') + another('g'),
+		$self('b') + another('b')
+	)
+})
+
+// ...
+```
+
 
 Features
 --------
@@ -198,3 +219,6 @@ main('set')('r', 70)
 
 darker('r') // 49 <- (main.r * 0.7)
 ```
+
+
+hug.js is licensed under the terms of the MIT License.
