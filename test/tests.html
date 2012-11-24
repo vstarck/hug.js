@@ -23,10 +23,10 @@ test('creating an object', function () {
 test('wrapping native objects: number', function () {
     var subject, wrapped;
 
-    subject = 13;
+    subject = 42;
     wrapped = hug(subject);
 
-    ok(subject, 'hug(number) is not falsy');
+    ok(wrapped, 'hug(number) is not falsy');
     notEqual(subject, wrapped, 'hug(number) is not the number');
     equal(wrapped(), subject, 'hug(number)() gets the number');
     equal(wrapped('value')(), subject, 'hug(number)("value")() gets the number');
@@ -38,7 +38,7 @@ test('wrapping native objects: string', function () {
     subject = 'hello world';
     wrapped = hug(subject);
 
-    ok(subject, 'hug(string) is not falsy');
+    ok(wrapped, 'hug(string) is not falsy');
     notEqual(subject, wrapped, 'is not the same');
     equal(wrapped(), subject, 'accessing wrapped string');
     equal(wrapped('value')(), subject, 'accessing wrapped string by #value');
